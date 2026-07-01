@@ -60,14 +60,61 @@ I did NOT set up any GitHub remote. Local-only per your instruction.
 
 Local `uv` is 0.10.0 (Feb 2026). Current release is 0.11.26 (Jun 2026). I did not upgrade globally — could affect your other projects. Upgrade with `brew upgrade uv` when convenient.
 
+### 5. Coverage gap in `ti_core/logging.py`
+
+11% of lines are uncovered (61, 79-80, 102). These are:
+- Line 61 (`log_file` handler branch) — I never set LOG_FILE in tests.
+- Lines 79-80 (`configure_logging` when `log_format` is console) — tests only exercise JSON path.
+- Line 102 (`configure_is_idempotent` doesn't assert anything about the console branch).
+
+Non-critical. Fill in when you build the CLI (`ti_ui`) and want to configure
+console logging for interactive use.
+
+### 6. Pytest resource-warning strictness
+
+`pyproject.toml` has `filterwarnings = ["error"]`. Any un-suppressed
+DeprecationWarning or ResourceWarning fails tests. This is intentional
+(catches leaked SQLite connections, etc.) but be aware: if you add a
+third-party library that emits benign warnings on import, add an
+`ignore::` line rather than downgrading the strictness.
+
 ---
 
 ## Design ambiguities I resolved by educated guess
 
 *(I'll add to this list as they arise. Each entry documents the ambiguity, my guess, and my reasoning — so you can override in the morning if the guess is wrong.)*
 
-### None yet.
+### Timezone convention
+
+I made a call to store **all timestamps in UTC internally** and convert to IST
+only at display boundaries. This matches the industry standard and prevents
+DST-like drift bugs. If you or any downstream tool expects IST-native
+timestamps in Parquet/SQLite, this needs revisiting.
+
+### structlog log format default
+
+Default is `LOG_FORMAT=json`. For local `make test` runs, this dumps JSON
+lines to your terminal — not the prettiest experience. If you want console
+mode in dev, either set `LOG_FORMAT=console` in `.env` or I can flip the
+default in `ti_core.config`.
+
+### Pytest `--import-mode=importlib`
+
+Required because each `packages/*/tests/` has the same short name. This
+mode has a small caveat: test files must have globally unique filenames
+(you cannot have two `test_utils.py` in different package tests/ dirs).
+Not a limitation we'll hit soon.
+
+### Autobahn override
+
+See #1 in the P1 list above. Cannot verify without live Kite session.
+
+### SQLAlchemy `datetime`/`Decimal` imports
+
+Marked `noqa: TC003` in schema.py because SQLAlchemy `Mapped[...]` uses
+these types at class-definition time via inspection, not just as annotations.
+Moving to TYPE_CHECKING would break Mapped resolution.
 
 ---
 
-*Last updated: (will be updated after each commit)*
+*Last updated: 2 Jul 2026, end of overnight session.*

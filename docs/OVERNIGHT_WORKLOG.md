@@ -163,3 +163,51 @@ on the shared `tests` module name.
 **Next:** Phase 1.2 was scoped but this session is running long. Committing
 Phase 1.1 and setting Phase 1.2 aside for the morning. See summary in the
 final commit.
+
+## End-of-session summary (~00:15 IST, 3 Jul 2026)
+
+### What got done tonight (4 atomic commits)
+
+- **Phase 0.1** (9f8c2ad): repo scaffold, 10-package uv workspace,
+  docker-compose, Rust workspace placeholder.
+- **Phase 0.2 + 0.4** (16478f5): CI tooling (Makefile, pre-commit,
+  GitHub Actions), 5 ADRs, autobahn vulnerability override.
+- **Phase 0.3** (76bc2fd): ti_core — config (Pydantic Settings), clock
+  (System/Manual), logging (structlog with secret redaction), events
+  (typed in-memory bus).
+- **Phase 1.1** (9362f4e): ti_data — SQLAlchemy schema (Instrument PIT,
+  Run, Trade with regulatory_regime, KillSwitchState, AgentArtifact) +
+  bias guards (look-ahead + survivorship, both raise AssertionError
+  subclasses).
+
+### Metrics
+
+- **83 Python tests passing.** 96% coverage on the code that has tests.
+  (Coverage gaps are in un-exercised branches, not untested modules.)
+- **1 Rust test passing.** Workspace crate builds clean.
+- **mypy strict:** 18 files, 0 issues.
+- **ruff:** 26 files, 0 issues.
+- **pip-audit:** no known vulnerabilities (after autobahn override).
+
+### What did NOT get done
+
+- **Phase 1.2** (Kite historical ingestor, even mocked). Deliberately
+  deferred — proper implementation with rate-limit queue and
+  point-in-time instrument snapshotting is a full day's work; a rushed
+  version overnight would create rework.
+- **Phase 2** (port iTrader ZerodhaBroker with fixes). Same reasoning
+  — this is where the highest-value work lives and it deserves a full
+  focused session, not the last hour of a long night.
+
+### For morning-Amrittya
+
+1. Read `QUESTIONS.md` first. One P1 item (autobahn compat) needs
+   runtime verification before any Kite integration testing.
+2. Read `docs/adr/` to understand the design commits I made on your
+   behalf (5 ADRs).
+3. Read `docs/OVERNIGHT_WORKLOG.md` (this file) for the running
+   commentary on decisions and corrections.
+4. Try `make ci` — everything should be green.
+5. Try `make docker-up` and confirm Redis is happy.
+6. If any of the above misbehaves, `git log` shows atomic commits you
+   can revert individually.

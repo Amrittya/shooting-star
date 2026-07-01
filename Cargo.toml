@@ -20,7 +20,7 @@ authors = ["Amrittya <amrittya.aakash.aswal@sap.com>"]
 # Async runtime
 tokio = { version = "1.44", features = ["full"] }
 # HTTP + WebSocket
-reqwest = { version = "0.13", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.13", features = ["json", "rustls"] }
 tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
 # Serde
 serde = { version = "1.0", features = ["derive"] }
