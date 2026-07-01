@@ -28,7 +28,7 @@ you can review with `git log --oneline` and `git show <hash>`.*
 - Docker 29.1.3 / Compose v5.0.0
 - Rust 1.95.0 / Cargo 1.95.0
 
-## Phase 0.1 — Repo scaffold (started ~22:15 IST)
+## Phase 0.1 — Repo scaffold (completed ~22:35 IST, commit 9f8c2ad)
 
 **Files created:**
 - `.gitignore` (Python + data + IDE + secrets)
@@ -41,10 +41,39 @@ you can review with `git log --oneline` and `git show <hash>`.*
 - `Cargo.toml` (Rust workspace root)
 - `rust/nautilus-kite/{Cargo.toml,src/lib.rs}` (placeholder)
 
+**Correction mid-flight:**
+- kiteconnect PyPI name (not pykiteconnect)
+- Python 3.11 dropped by numpy 2.5 / xgboost 3.3 — bumped to 3.12+
+- 8 library version guesses corrected against real PyPI data
+
 **Decisions logged:**
-- Python 3.11-3.12 only. Not 3.13 yet (numpy/pandas ABI churn).
+- Python 3.12-3.13. Not 3.14 yet.
 - SQLite for v1 metadata; Postgres available via docker-compose profile.
 - Rust workspace exists but Phase 4 (weeks 4-16 in plan).
 - Redis bound to localhost only — never externally exposed.
 
-**Next:** commit Phase 0.1, then Phase 0.2 (CI tooling verification + pre-commit).
+**CI gates verified green:** ruff, ruff-format, mypy strict, pytest (0 tests).
+
+## Phase 0.2 — CI + tooling (started ~22:40 IST)
+
+- `.pre-commit-config.yaml` (ruff, mypy, gitleaks, standard hooks)
+- `Makefile` (help, sync, lint, fmt, type, test, cov, audit, ci, clean, docker-*)
+- `.github/workflows/ci.yml` (documents CI contract; runs when remote is added)
+- `packages/ti_core/tests/test_imports.py` — sanity import test for all 10 packages
+
+**Real finding: PYSEC-2020-25 in autobahn 19.11.2** (pinned by kiteconnect 5.2.0).
+Forced override to autobahn ≥22.7.1 (resolved 26.6.2). Documented in ADR-0005.
+Risk logged to QUESTIONS.md: kiteconnect may not work with autobahn 26; needs
+runtime verification against Kite paper mode.
+
+**CI gates green:** ruff, ruff-format, mypy strict, pytest (10 tests), pip-audit.
+
+## Phase 0.4 — ADRs (pulled forward, completed with 0.2)
+
+- ADR-0001: Nautilus-trader + interim PykiteBroker
+- ADR-0002: Regulatory-regime overlay (SEBI dates confirmed against circular)
+- ADR-0003: Agents out-of-band, never in hot path
+- ADR-0004: Port iTrader adapter with specific fixes
+- ADR-0005: autobahn vulnerability override
+
+**Next:** commit Phase 0.2 + 0.4 together, then Phase 0.3 (ti_core: config, logging, clock, events).

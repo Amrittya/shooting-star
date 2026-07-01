@@ -44,6 +44,14 @@ ti-ml = { workspace = true }
 ti-agents = { workspace = true }
 ti-ui = { workspace = true }
 
+[tool.uv]
+# Override vulnerable transitive deps pinned by upstream packages.
+# See docs/adr/adr-0005-vuln-overrides.md for rationale.
+override-dependencies = [
+    # kiteconnect==5.2.0 pins autobahn==19.11.2 (PYSEC-2020-25). Force upgrade.
+    "autobahn>=22.7.1",
+]
+
 [dependency-groups]
 dev = [
     "ruff>=0.15.20",

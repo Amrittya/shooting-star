@@ -1,0 +1,45 @@
+# Pre-commit hooks for Shooting Star.
+# Install: uv run pre-commit install
+# Run manually: uv run pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+      - id: detect-private-key
+      - id: check-case-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.20
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.1.0
+    hooks:
+      - id: mypy
+        args: [--config-file=pyproject.toml]
+        additional_dependencies:
+          - pydantic>=2.13.0
+          - pydantic-settings>=2.14.0
+          - structlog>=26.1.0
+          - types-requests
+        # Only run on packages/ — avoids venv scanning
+        files: ^packages/.*\.py$
+        # Skip tests in pre-commit (too slow); CI catches them
+        exclude: ^packages/.*/tests/.*$
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks

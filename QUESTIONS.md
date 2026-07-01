@@ -12,13 +12,40 @@
 
 ## P1 — Needs decision this week
 
-*(none yet)*
+### 1. autobahn version override may break Kite WebSocket
+
+`kiteconnect 5.2.0` pins `autobahn[twisted]==19.11.2`, which has PYSEC-2020-25.
+I forced an override to `autobahn>=22.7.1` (resolved to 26.6.2) to clear the
+vulnerability. See `docs/adr/adr-0005-vuln-overrides.md`.
+
+**The risk:** kiteconnect's `KiteTicker` (WebSocket) may not work correctly
+with autobahn 26. autobahn 20+ changed some handshake APIs. I have NO way to
+integration-test this without a live Kite session, which I refuse to do while
+you're asleep.
+
+**Action needed from you in the morning:**
+1. When you first run `PykiteBroker` against Kite paper mode, watch for
+   WebSocket connection errors.
+2. If it breaks, decide: (a) revert to autobahn 19.11.2 and accept the CVE
+   as a known-issue-with-compensating-controls, or (b) fork kiteconnect and
+   unpin autobahn ourselves.
+3. Report back so I can update ADR-0005 with the resolution.
 
 ---
 
 ## P2 — Nice-to-have clarification
 
-### Git author identity
+### 2. Python version bumped to 3.12+
+
+Original plan targeted Python 3.11+. Numpy 2.5 and xgboost 3.3 both dropped
+Python 3.11 support (they now require 3.12+). To use current ML tooling, I
+bumped `requires-python = ">=3.12,<3.14"`.
+
+You have `python3.13` (3.13.12) installed locally, so this works. `uv sync`
+will use 3.13 by default. If you want to target 3.12 specifically:
+`uv python pin 3.12`.
+
+### 3. Git author identity
 
 I set the local git author to `Amrittya <amrittya.aakash.aswal@sap.com>` matching the iTrader repo. If you'd rather use a different identity (personal email, GitHub noreply) for a private trading project, run:
 
@@ -29,11 +56,7 @@ git config user.email "<preferred-email>"
 
 I did NOT set up any GitHub remote. Local-only per your instruction.
 
-### Python version
-
-Local `python3` is 3.11.14. I pinned `pyproject.toml` to `requires-python = ">=3.11,<3.13"` — Python 3.13 has some numpy/pandas ABI churn I want to avoid. If you want to run on 3.12+ specifically, tell me.
-
-### `uv` version
+### 4. `uv` version
 
 Local `uv` is 0.10.0 (Feb 2026). Current release is 0.11.26 (Jun 2026). I did not upgrade globally — could affect your other projects. Upgrade with `brew upgrade uv` when convenient.
 
