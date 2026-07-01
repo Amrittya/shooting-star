@@ -1,0 +1,46 @@
+# Cargo workspace — Rust adapter for nautilus-trader → Zerodha Kite.
+#
+# The Python side of Shooting Star runs independently; this workspace is
+# a parallel track (Phase 4 of the plan). It will produce a Python wheel
+# via PyO3/maturin.
+[workspace]
+resolver = "2"
+members = [
+    "rust/nautilus-kite",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Proprietary"
+authors = ["Amrittya <amrittya.aakash.aswal@sap.com>"]
+
+[workspace.dependencies]
+# Async runtime
+tokio = { version = "1.44", features = ["full"] }
+# HTTP + WebSocket
+reqwest = { version = "0.13", features = ["json", "rustls-tls"] }
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
+# Serde
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Lock-free
+arc-swap = "1.7"
+# Error / tracing
+thiserror = "2.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+# Bytes / decoding
+byteorder = "1.5"
+bytes = "1.10"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
+
+[profile.dev]
+opt-level = 0
+debug = true

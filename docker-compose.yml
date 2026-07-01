@@ -1,0 +1,52 @@
+# =========================================================================
+# Shooting Star — local development stack
+# Bring up: docker compose up -d
+# Only Redis is required for v1 (event bus). Postgres is optional (v2+);
+# v1 uses SQLite for metadata.
+# =========================================================================
+name: shooting-star
+
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: shooting-star-redis
+    ports:
+      - "127.0.0.1:6379:6379"  # bind localhost only — never expose
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+
+  # Postgres is defined but disabled by default (v1 uses SQLite).
+  # Enable with: docker compose --profile postgres up -d
+  postgres:
+    image: postgres:17-alpine
+    container_name: shooting-star-postgres
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: shooting_star
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devonly}
+      POSTGRES_DB: shooting_star
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shooting_star"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:

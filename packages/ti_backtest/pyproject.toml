@@ -1,0 +1,20 @@
+[project]
+name = "ti-backtest"
+version = "0.1.0"
+description = "Shooting Star — backtesting rigor layer on top of nautilus (walk-forward, Monte Carlo, bias guards, regulatory-regime overlay)."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "ti-core",
+    "ti-data",
+    "ti-strategy",
+    "ti-risk",
+    "pandas>=3.0.0",
+    "numpy>=2.5.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ti_backtest"]
