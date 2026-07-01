@@ -119,3 +119,47 @@ runtime verification against Kite paper mode.
   from `structlog.get_logger`).
 
 **Next:** commit Phase 0.3, then Phase 1.1 (ti_data storage + bias guards).
+
+## Phase 1.1 — ti_data storage + bias guards (completed ~23:55 IST)
+
+**Modules written:**
+- `ti_data/storage/schema.py` — SQLAlchemy 2.0 declarative models for
+  metadata.db. Five tables:
+  - `instruments` — point-in-time (valid_from/valid_to) with unique
+    constraint on (instrument_token, valid_from). Supports SEBI lot-size
+    rebalances by design.
+  - `runs` — one row per backtest/paper/live session, config_hash for
+    reproducibility.
+  - `trades` — closed trades, gross/charges/net PnL, `regulatory_regime`
+    field for ADR-0002 overlay.
+  - `kill_switch_state` — persistent per-(scope, level) kill switches.
+  - `agent_artifacts` — L1/L2/L3 outputs with LLM audit info (model,
+    tokens, cost).
+- `ti_data/bias_guards.py` — the linchpin invariant enforcement:
+  - `assert_no_lookahead` — every bar-shaped frame passing to strategy
+    code must have `bar_close_time <= clock.now() + slack`. Slack is 0
+    in backtest, small positive in live/paper.
+  - `assert_instrument_query_is_point_in_time` — raw SQL touching the
+    `instruments` table must filter on both valid_from AND valid_to.
+    Defense-in-depth for the few places raw SQL is used.
+  - Both raise AssertionError subclasses (LookAheadError,
+    SurvivorshipError) so they cannot be caught by generic `except Exception`.
+
+**Tests: 21 (14 bias guards, 7 schema). Total repo: 83 passing.**
+
+- Bias-guard tests: past/present/future frames, slack behavior, empty
+  frame, missing column, forward-clock-advance, and full survivorship
+  matrix (missing valid_from, missing valid_to, both missing, correct
+  form, non-instrument queries).
+- Schema tests: PIT snapshot storage (two rows for same tradingsymbol
+  with different lot sizes), unique constraint enforcement, Run↔Trade
+  relationship, kill-switch scope/level uniqueness, agent artifact
+  LLM audit fields.
+
+**Pytest infrastructure fix:** enabled `--import-mode=importlib` in
+pytest config so multiple `packages/*/tests/` directories don't collide
+on the shared `tests` module name.
+
+**Next:** Phase 1.2 was scoped but this session is running long. Committing
+Phase 1.1 and setting Phase 1.2 aside for the morning. See summary in the
+final commit.

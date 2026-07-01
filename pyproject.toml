@@ -159,12 +159,15 @@ testpaths = ["packages"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+# importlib mode lets multiple packages each have their own tests/ dir
+# without hitting "duplicate module name" collection errors.
 addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
     "--tb=short",
     "-q",
+    "--import-mode=importlib",
 ]
 markers = [
     "slow: tests that take >1s (deselect with '-m \"not slow\"')",
