@@ -77,3 +77,45 @@ runtime verification against Kite paper mode.
 - ADR-0005: autobahn vulnerability override
 
 **Next:** commit Phase 0.2 + 0.4 together, then Phase 0.3 (ti_core: config, logging, clock, events).
+
+## Phase 0.3 — ti_core (completed ~23:15 IST)
+
+**Modules written:**
+- `config.py` — Pydantic `Settings` loaded from env, validated at construction.
+  Kill-switch percentages / capital / greek limits all bounds-checked at load.
+  Secrets wrapped in `SecretStr`. `require_broker()` and `require_llm()`
+  guards for fail-fast startup in paper/live modes. Singleton via
+  `get_settings()`.
+- `clock.py` — `Clock` abstract + `SystemClock` (wall) + `ManualClock`
+  (backtest). UTC internally, IST at display boundaries. `is_market_open()`
+  checks NSE regular session (09:15–15:30 IST, weekdays only, no holiday
+  awareness yet — that lives in `ti_data`).
+- `logging.py` — structlog config, JSON default. Secret redaction processor
+  runs BEFORE any renderer: catches SecretStr values and any dict key matching
+  a broad regex (api_key, access_token, password, kite_api, anthropic_api,
+  etc). Shallow-recurses one level into nested contexts.
+- `events.py` — `EventBus` abstract + `InMemoryEventBus`. Type-driven
+  subscription (subscribe to `type[Event]`, not channel string). Fan-out
+  runs handlers concurrently; exceptions propagate after all handlers ran.
+
+**Tests: 62 passing, 95% coverage on ti_core.**
+
+- test_config: defaults, env overrides, SecretStr wrapping, validator bounds
+  (kill %, positive capital), `require_broker`/`require_llm` guards.
+- test_clock: UTC awareness, IST conversion, `is_market_open` boundary
+  conditions, ManualClock forward-only advance, tz-aware assertion.
+- test_logging: pattern matches for secret key names, redaction of SecretStr,
+  nested-dict redaction, JSON output structure, idempotent configure_logging.
+- test_events: subscribe/publish, multiple handlers, type-driven routing
+  (OrderPlaced vs OrderFilled isolation), empty-fan-out no-op,
+  handler-exception-propagates-after-fanout, close clears state.
+
+**Bugs I caught in my own code by running tests:**
+- structlog `cache_logger_on_first_use=True` meant handler swaps between
+  tests were ignored → test rewrite to use `capsys` + `structlog.reset_defaults()`.
+- TC003 (type-checking imports) required `Path` to move into TYPE_CHECKING
+  blocks in three files.
+- Two mypy strict issues (wrong type: ignore code, unannotated Any return
+  from `structlog.get_logger`).
+
+**Next:** commit Phase 0.3, then Phase 1.1 (ti_data storage + bias guards).
