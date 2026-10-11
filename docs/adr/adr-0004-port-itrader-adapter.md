@@ -6,7 +6,7 @@
 
 ## Context
 
-The predecessor project (iTrader) at `/Users/i543879/Documents/Pet Projects/iTrader/`
+The predecessor project (iTrader)
 contains a production-tested Zerodha adapter
 (`itrader-brokers/itrader_brokers/zerodha/adapter.py`) that has been running
 live. Analysis identified it as high-quality (comprehensive Kite feature

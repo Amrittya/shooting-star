@@ -4,7 +4,8 @@ Personal, semi-autonomous trading intelligence engine for Indian markets (NSE/BS
 
 > The project is named after the reversal candlestick pattern — apt for a system whose whole purpose is to know when the tape is about to turn.
 
-**Status:** Phase 0 scaffold. See `docs/OVERNIGHT_WORKLOG.md` for the incremental build log; see `/Users/i543879/.claude/plans/cryptic-hopping-lamport.md` for the full design plan.
+**Status:** Early-stage build. Core packages and the risk and backtest framework are scaffolded;
+execution and ML tracks are in progress. See `docs/OVERNIGHT_WORKLOG.md` for the incremental build log.
 
 ## What this is
 
